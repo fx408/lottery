@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+		<title>年会抽奖</title>
+		<link rel="stylesheet" href="./css/style.css" />
+		<script type="text/javascript" src="./js/jquery-1.7.1.min.js"></script>
+	</head>
+	
+	<body>
+		
+		<div id="user_list" class="user_list">
+			<canvas id="tutorial"></canvas>
+			
+			<div id="stop_button"><a href="javascript:;">STOP</a></div>
+			
+			<div id="continue_button"><a href="javascript:;">再来一次</a></div>
+		</div>
+		
+		<div id="winner_list">
+			<div class="winner_title">获奖名单</div>
+			<div class="winner_table">
+				<table>
+					<thead>
+						<th>姓名</th>
+						<th>获奖等级</th>
+						<th>操作</th>
+					</thead>
+					<tbody class="list">
+					</tbody>
+				</table>
+				
+				<div><a href="javascript:;" id="clear">清空</a></div>
+			</div>
+		</div>
+		
+		<div id="cover_up">
+			<div id="start_button_up">开始抽奖</div>
+		</div>
+		<div id="cover_bottom">
+			<div id="start_button_bottom">开始抽奖</div>
+		</div>
+		
+		
+		<script type="text/javascript" src="./js/jQuery.publicBox.js"></script>
+		<script type="text/javascript" src="./js/users.js"></script>
+		<script type="text/javascript" src="./js/lottery.js"></script>
+		<script type="text/javascript">
+			var canvas = document.getElementById('tutorial');
+			var ctx = canvas.getContext('2d');
+			ctx.globalCompositeOperation = 'lighter';
+			canvas.height = 700;
+			canvas.width = 700;
+			
+			var db = new localDatabase();
+			var lottery = new lotteryProject();
+			lottery.init();
+			
+			$(function() {
+				$("#continue_button").click(function() {
+					lottery.run();
+					return false;
+				});
+				
+				$("#stop_button").click(function() {
+					lottery.stop();
+					return false;
+				});
+				
+				$("#clear").click(function() {
+					$(this).miniConfirm({
+						msg:"确认清空名单吗?",
+						callback: function() {
+							db.clear();
+							$("#winner_list .winner_table tbody").empty();
+							$.fn.closePublicBox(0);
+						}
+					});
+				});
+				
+				$("#winner_list a.del").live('click', function() {
+					var $this = $(this);
+					
+					$this.miniConfirm({
+						msg:"确认删除获奖者吗?",
+						callback: function() {
+							var n = $this.parents("tr").find("td:eq(0)").attr("name");
+							
+							db.del(n);
+							$this.parents("tr").remove();
+							$.fn.closePublicBox(0);
+						}
+					});
+					
+					return false;
+				});
+				
+				$("select.level").live("change", function() {
+					var n = $(this).parents("tr").find("td:eq(0)").attr("name"),
+							l = $(this).val();
+
+					db.set(n, {name:n, level:l});
+				});
+				
+				$("#winner_list .winner_title").click(function() {
+					var tab = $("#winner_list .winner_table"),
+							$this = $(this);
+					
+					if(tab.is(":visible")) {
+						tab.slideUp(200, function() {
+							$this.animate({"left":"0px"}, 300);
+							$("#winner_list").animate({"right":"-180px"}, 300);
+						});
+					} else {
+						$this.animate({"left":"90px"}, 300);
+						$("#winner_list").animate({"right":"20px"}, 300, function() {
+							tab.slideDown(200);
+						});
+					}
+				});
+				
+				// 开始抽奖
+				$("#start_button_up, #start_button_bottom").click(function() {
+					
+					$("#cover_up").animate({"height":"0px"}, 550);
+					$("#cover_bottom").animate({"top":$(window).height()+"px"}, 500, function() {
+						lottery.run();
+						$("#cover_up, #cover_bottom").hide();
+						//showCover();
+					});
+				}).mouseover(function() {
+					$("#start_button_up, #start_button_bottom").css("color", "#FFF4C8");
+				}).mouseout(function() {
+					$("#start_button_up, #start_button_bottom").css("color", "#fff");
+				});
+				
+				initCover();
+				$(window).resize(function() {
+					if($("#cover_up").is(":visible")) initCover();
+				});
+			});
+			
+			function initCover() {
+				var winWidth = $(window).width(), winHeight = $(window).height();
+				
+				var h = winHeight/2 - 50;
+				
+				$("#cover_up, #cover_bottom").css({"width": winWidth+"px", "height":h+"px"});
+				$("#cover_bottom").css({"top":h+"px", "height":(h+100)+"px"});
+				
+				
+				var sbw = $("#start_button_up").width(), sbh = $("#start_button_up").height();
+				var sbl = (winWidth - sbw) / 2 - 30;
+				$("#start_button_up, #start_button_bottom").css({"left":sbl+"px"});
+			}
+			
+			function showCover() {
+				var winHeight = $(window).height(), h = winHeight/2 - 50;
+				
+				$("#cover_up").animate({"height":h+"px"}, 550);
+				$("#cover_bottom").animate({"top":h+"px"}, 500, function() {
+					
+				});
+			}
+		</script>
+	</body>
+</html>
