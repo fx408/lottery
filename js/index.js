@@ -159,7 +159,6 @@ function createColor() {
 		}
 	}
 	colorCount = colorList.length;
-	console.log(colorList);
 }
 
 function dechex(num) {

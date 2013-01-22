@@ -50,24 +50,25 @@ var lotteryProject = function() {
 lotteryProject.prototype = {
 	// 随机出 12个用户
 	randUsers: function() {
-		var i = 0;
+		this.users.sort(function () { // 在取出用户前 先进行乱序排列，打乱顺序
+    	return 0.5 - Math.random();
+  	});
+  	
 		this.usernames = [];
-		var keys = {};
+		var keys = {}, k = 0, u = '', len = 0;
 		
 		while(true) {
-			var k = Math.floor( Math.random()*this.count );
-			var u = this.users[k];
+			k = Math.floor( Math.random()*this.count );
+			u = this.users[k];
 			
-			if(!keys[k] && !localStorage.getItem[u]) {
-				this.usernames.push(u);
+			if(!keys[k] && !db.item(u)) {
+				len = this.usernames.push(u);
 				keys[k] = k;
-				i++;
+				
+				if(len >= this.userSize) break;
 			}
-			
-			if(i >= this.userSize) break;
 		}
 		
-		console.log(this.usernames);
 	},
 	
 	// 绘制格子
@@ -78,9 +79,10 @@ lotteryProject.prototype = {
 		var s1 = Math.sin(Math.PI*start), c1 = Math.cos(Math.PI*start),
 				s2 = Math.sin(Math.PI*finish), c2 = Math.cos(Math.PI*finish);
 		
-		var point = {x:this.mx+this.radius/this.proportion*c1, y:this.my+this.radius/this.proportion*s1},
-				lineTo1 = {x:this.mx+this.radius*c1, y:this.my+this.radius*s1},
-				lineTo2 = {x:this.mx+this.radius/this.proportion*c2, y:this.my+this.radius/this.proportion*s2};
+		var ratio = this.radius/this.proportion,
+				point = {x: this.mx + ratio*c1, y: this.my + ratio*s1},
+				lineTo1 = {x: this.mx + this.radius*c1, y: this.my + this.radius*s1},
+				lineTo2 = {x: this.mx + ratio*c2, y: this.my + ratio*s2};
 		
 		ctx.fillStyle = color;
 		ctx.beginPath();
@@ -88,7 +90,7 @@ lotteryProject.prototype = {
 		ctx.lineTo(lineTo1.x, lineTo1.y);
 		ctx.arc(this.mx, this.my, this.radius, Math.PI*start, Math.PI*finish); // 外圈
 		ctx.lineTo(lineTo2.x, lineTo2.y);
-		ctx.arc(this.mx, this.my, this.radius/this.proportion, Math.PI*finish, Math.PI*start, true); // 内圈
+		ctx.arc(this.mx, this.my, ratio, Math.PI*finish, Math.PI*start, true); // 内圈
 		ctx.lineTo(point.x, point.y);
 		ctx.fill();
 		
@@ -142,7 +144,6 @@ lotteryProject.prototype = {
 		var _this = this;
 		if(this.winner != -1) {
 			setTimeout(function() {
-				_this.runing = false;
 				_this.showWinner();
 			}, 1000);
 			return false;
@@ -156,7 +157,8 @@ lotteryProject.prototype = {
 	nowColorIndex: 0,
 	createHoverColor: function() {
 		this.nowColorIndex++;
-		if(this.nowColorIndex >= colorCount) this.nowColorIndex = 0;
+		this.nowColorIndex = this.nowColorIndex % colorCount;
+		
 		return colorList[this.nowColorIndex];
 	},
 	
@@ -174,6 +176,7 @@ lotteryProject.prototype = {
 			if(r > 3) {
 				clearTimeout(time);
 				_this.create(_this.winner, winColors[1], true);
+				_this.runing = false;
 			}
 		}, 100);
 		
