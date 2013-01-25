@@ -51,8 +51,8 @@ lotteryProject.prototype = {
 	// 随机出 12个用户
 	randUsers: function() {
 		this.users.sort(function () { // 在取出用户前 先进行乱序排列，打乱顺序
-    	return 0.5 - Math.random();
-  	});
+			return 0.5 - Math.random();
+		});
   	
 		this.usernames = [];
 		var keys = {}, k = 0, u = '', len = 0;
@@ -101,7 +101,7 @@ lotteryProject.prototype = {
 	drawFont: function(i, start, isWin) {
 		ctx.fillStyle = isWin ? "#f00" : "#333";
 		ctx.font='bold '+this.fSize+'px Microsoft YaHei';
-	  ctx.textBaseline='top';
+		ctx.textBaseline='top';
 	  
 		var nameLen = this.usernames[i].length;
 		var wordWidth = nameLen > 3 ? this.word.width*4 : this.word.width*nameLen;
@@ -116,7 +116,7 @@ lotteryProject.prototype = {
 		fontCoordinate.x = this.mx+this.radius*(0.5 + 0.5/this.proportion) * Math.cos(Math.PI*(start-this.arcRecoup)) - wordWidth/2;
 		fontCoordinate.y = this.my+this.radius*(0.5 + 0.5/this.proportion) * Math.sin(Math.PI*(start-this.arcRecoup)) - this.word.height/2;
     
-    ctx.fillText(this.usernames[i], fontCoordinate.x, fontCoordinate.y);
+		ctx.fillText(this.usernames[i], fontCoordinate.x, fontCoordinate.y);
 	},
 	
 	// 旋转
@@ -165,15 +165,12 @@ lotteryProject.prototype = {
 	// 显示获胜者
 	showWinner: function() {
 		var winColors = ['#ff00ff', '#ffff00', '#00ffff', '#ff0000', '#35E854', '#4E8FFE'];
-		var _this = this;
-		
-		var i = 0, r = 0, time = 0;
+		var i = 0, time = 0, _this = this;
 		time = setInterval(function() {
 			_this.create(_this.winner, winColors[i%6]);
 			i++;
-			if(i%6 == 0) r++;
 			
-			if(r > 3) {
+			if(i > 16) {
 				clearTimeout(time);
 				_this.create(_this.winner, winColors[1], true);
 				_this.runing = false;
@@ -187,19 +184,19 @@ lotteryProject.prototype = {
 		if( $("#winner_list .list div[name='"+obj.name+"']").length ) return;
 		
 		var html = '<tr><td name="'+obj.name+'">'
-				+ obj.name
-				+ '</td>'
-				+ '<td><select name="level" class="level">';
-				
-				for(var i = 0, l = this.levels.length; i < l; i++) {
-					var s = i == obj.level ? ' selected="selected"' : '';
-					html += '<option value="'+i+'"'+s+'>'+this.levels[i]+'</option>';
-				}
-				
-				html += '</select></td>'
-				+ '<td><a href="javascript:;" class="del">删除</a>'
-				+ '</td></tr>';
-		
+			+ obj.name
+			+ '</td>'
+			+ '<td><select name="level" class="level">';
+
+		for(var i = 0, l = this.levels.length; i < l; i++) {
+			var s = i == obj.level ? ' selected="selected"' : '';
+			html += '<option value="'+i+'"'+s+'>'+this.levels[i]+'</option>';
+		}
+
+		html += '</select></td>'
+			+ '<td><a href="javascript:;" class="del">删除</a>'
+			+ '</td></tr>';
+
 		$("#winner_list .list").prepend(html);
 		
 		saveToDb && db.set(obj.name, obj);
@@ -210,15 +207,11 @@ lotteryProject.prototype = {
 		ctx.clearRect(0, 0, canvas.width, canvas.height);
 		
 		var m = 12, _this = this, k = 0;
-		for(var i = 0; i < m; i++) {
+		for(var i = 0; i <= m; i++) {
 			setTimeout(function() {
-				_this.create(k, _this.colors[k]);
+				if(k < m) _this.create(k, _this.colors[k]);
+				else if(k == m) _this.whirling();
 				k++;
-				if(k == 12) {
-					setTimeout(function() {
-						_this.whirling();
-					}, 500);
-				}
 			}, 700*i);
 		}
 	},
@@ -238,8 +231,7 @@ lotteryProject.prototype = {
 	},
 	
 	stop: function() {
-		if(!this.allowStop) return false;
-		this.speedMode = false;
+		if(this.allowStop) this.speedMode = false;
 	}
 };
 
