@@ -9,13 +9,17 @@ var lottery = new lotteryProject();
 lottery.init();
 
 $(function() {
-	$("#continue_button").click(function() {
-		lottery.run();
-		return false;
-	});
-	
 	$("#stop_button").click(function() {
-		lottery.stop();
+		if(lottery.allowStop) {
+			$(this).find("a").html("在来一次").css({"font-size":"80px", "margin-top":"35px"});
+			
+			lottery.stop();
+		} else if(!lottery.runing) {
+			$(this).find("a").html("STOP").css({"font-size":"120px", "margin-top":"5px"});
+			
+			lottery.run();
+		}
+		
 		return false;
 	});
 	
@@ -76,7 +80,7 @@ $(function() {
 		
 		$("#cover_up").animate({"height":"0px"}, 550);
 		$("#cover_bottom").animate({"top":$(window).height()+"px"}, 500, function() {
-			lottery.run();
+			$("#stop_button").trigger("click");
 			$("#cover_up, #cover_bottom").hide();
 			//showCover();
 		});

@@ -231,7 +231,10 @@ lotteryProject.prototype = {
 	},
 	
 	stop: function() {
-		if(this.allowStop) this.speedMode = false;
+		if(this.allowStop) {
+			this.allowStop = false;
+			this.speedMode = false;
+		}
 	}
 };
 
